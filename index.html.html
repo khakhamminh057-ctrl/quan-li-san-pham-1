@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản lý thông tin sản phẩm quần áo</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 12px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+  }
+
+  /* a. Form bo góc 10px, nền #e0f2fe, hover nổi nhẹ với shadow #E0FEF2 */
+  .form-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 18px;
+    background: #e0f2fe;
+    border-radius: 10px;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .form-wrap:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px #E0FEF2;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  h1 { text-align: center; font-size: 26px; margin: 0 0 16px; text-transform: uppercase; }
+
+  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .tab {
+    padding: 6px 16px;
+    border: 1px solid #93c5fd;
+    background: #fff;
+    color: #1d4ed8;
+    border-radius: 999px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tab:hover { background: #dbeafe; }
+  .tab.active { background: #6366f1; border-color: #6366f1; color: #fff; font-weight: 600; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .req { color: #dc2626; }
+
+  /* b. Input viền dày 4px màu #94B8A3, focus đổi #A3B894 + viền sáng mờ #bfdbfe */
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 14px;
+    border: 4px solid #94B8A3;
+    border-radius: 10px;
+    background: #fff;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #A3B894;
+    box-shadow: 0 0 0 4px #bfdbfe;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  .error { display: none; color: #dc2626; font-size: 12px; margin-top: 4px; }
+  .field.invalid .error { display: block; }
+  .field.invalid input { border-color: #dc2626; }
+
+  .price {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .preview { text-align: center; margin: 12px 0; min-height: 24px; }
+  .preview img { max-width: 100%; max-height: 220px; border-radius: 10px; }
+
+  .actions { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+
+  /* c. Nút Lưu, Thoát: nền #6366f1, hover #4f46e5, active #3730a3, dịch xuống 4px và giảm shadow */
+  .btn {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 999px;
+    background: #6366f1;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(99,102,241,.45);
+    transition: background .2s, transform .1s, box-shadow .1s;
+  }
+  .btn:hover { background: #4f46e5; }
+  .btn:active {
+    background: #3730a3;
+    transform: translateY(4px);
+    box-shadow: 0 2px 4px rgba(99,102,241,.35);
+  }
+
+  .msg {
+    display: none;
+    margin-top: 16px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #dcfce7;
+    color: #166534;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="form-wrap">
+  <div class="card">
+    <h1>👗 Quản lý thông tin sản phẩm <span id="titleCat">quần áo</span></h1>
+
+    <div class="tabs" id="tabs"></div>
+
+    <form id="productForm" novalidate>
+      <div class="row">
+        <div class="field" id="f-ma">
+          <label for="ma">Mã sản phẩm <span class="req">*</span></label>
+          <input type="text" id="ma" placeholder="VD: AO001">
+          <div class="error">Vui lòng nhập mã sản phẩm</div>
+        </div>
+        <div class="field" id="f-ten">
+          <label for="ten">Tên sản phẩm <span class="req">*</span></label>
+          <input type="text" id="ten" placeholder="VD: Áo sơ mi trắng nam">
+          <div class="error">Vui lòng nhập tên sản phẩm</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="hang">Thương hiệu</label>
+          <input type="text" id="hang" placeholder="VD: Zara, Uniqlo, Routine...">
+        </div>
+        <div class="field">
+          <label for="xuatxu">Xuất xứ</label>
+          <select id="xuatxu">
+            <option>Việt Nam</option>
+            <option>Trung Quốc</option>
+            <option>Hàn Quốc</option>
+            <option>Nhật Bản</option>
+            <option>Thái Lan</option>
+            <option>Khác</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="loai">Loại sản phẩm</label>
+        <select id="loai"></select>
+      </div>
+
+      <div class="field">
+        <label for="mota">Mô tả chi tiết sản phẩm</label>
+        <textarea id="mota" placeholder="Nhập thông tin về chất liệu, size, màu sắc, kiểu dáng..."></textarea>
+      </div>
+
+      <div class="price" id="price"></div>
+
+      <div class="field">
+        <label for="hinh">Link hình ảnh sản phẩm</label>
+        <input type="url" id="hinh" placeholder="Dán link hình ảnh sản phẩm...">
+      </div>
+
+      <div class="preview" id="preview"></div>
+
+      <div class="actions">
+        <button type="submit" class="btn">Lưu</button>
+        <button type="button" class="btn" id="exitBtn">Thoát</button>
+      </div>
+
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const categories = {
+    "Áo":       { price: "150.000đ — 1.200.000đ" },
+    "Quần":     { price: "200.000đ — 1.500.000đ" },
+    "Váy":      { price: "250.000đ — 1.800.000đ" },
+    "Áo khoác": { price: "350.000đ — 2.000.000đ" },
+    "Túi":      { price: "200.000đ — 3.000.000đ" },
+    "Phụ kiện": { price: "50.000đ — 800.000đ" }
+  };
+
+  const tabsEl = document.getElementById("tabs");
+  const loai = document.getElementById("loai");
+  const priceEl = document.getElementById("price");
+  const titleCat = document.getElementById("titleCat");
+  const preview = document.getElementById("preview");
+  const msg = document.getElementById("msg");
+  let current = "Áo khoác";
+
+  Object.keys(categories).forEach(name => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab";
+    b.textContent = name;
+    b.onclick = () => setCategory(name);
+    tabsEl.appendChild(b);
+
+    const o = document.createElement("option");
+    o.textContent = name;
+    loai.appendChild(o);
+  });
+
+  function setCategory(name) {
+    current = name;
+    loai.value = name;
+    [...tabsEl.children].forEach(t => t.classList.toggle("active", t.textContent === name));
+    priceEl.textContent = "👗 Giá sản phẩm: " + categories[name].price;
+    titleCat.textContent = name.toLowerCase();
+    renderPreview();
+  }
+  loai.onchange = () => setCategory(loai.value);
+
+  function renderPreview() {
+    const url = document.getElementById("hinh").value.trim();
+    preview.innerHTML = "";
+    if (!url) return;
+    const img = new Image();
+    img.alt = "Hình ảnh " + current.toLowerCase();
+    img.onerror = () => { preview.textContent = "Không tải được hình ảnh, hãy kiểm tra lại link."; };
+    img.src = url;
+    preview.appendChild(img);
+  }
+  document.getElementById("hinh").addEventListener("input", renderPreview);
+
+  function check(inputId, fieldId) {
+    const ok = document.getElementById(inputId).value.trim() !== "";
+    document.getElementById(fieldId).classList.toggle("invalid", !ok);
+    return ok;
+  }
+
+  document.getElementById("productForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const a = check("ma", "f-ma");
+    const b = check("ten", "f-ten");
+    if (!(a && b)) { msg.style.display = "none"; return; }
+    msg.textContent = "✅ Đã lưu sản phẩm: " + document.getElementById("ten").value.trim();
+    msg.style.display = "block";
+  });
+
+  document.getElementById("exitBtn").onclick = () => {
+    document.getElementById("productForm").reset();
+    document.querySelectorAll(".field").forEach(f => f.classList.remove("invalid"));
+    msg.style.display = "none";
+    setCategory("Áo khoác");
+  };
+
+  setCategory(current);
+</script>
+</body>
+</html>
